@@ -1,0 +1,215 @@
+<!-- 1. Rename this file to a .html extension and open it in Chrome to run it.  -->
+<!-- 2. Modify this document to complete the 5 tasks defined below.             -->
+<!-- 3. Make sure to rename it to .txt before sending back your solution.       -->
+
+<html>
+  <head>
+    <!-- Task 1 (1 minute): Using CSS, please make the background a tiny bit darker -->
+
+    <!-- Task 2 (1 minute): Using CSS, when the mouse hovers over a button, it should turn a bit lighter
+          with a smooth transition of 0.5 seconds -->
+
+    <!-- Task 3 (1 minute): Every time we click on the button, there's an annoying blue line that appears.
+          Make it so that this line doesn't appear anymore -->
+
+    <!-- Task 4 (2 minutes): Look at the line that says "sb.onclick = setup". We want it so when we click
+          the start button, the function setup() gets called, but nothing is happening.
+          Explain why in a comment above the line "sb.onclick = setup", and fix the issue.
+          Note that we don't want to define the onclick event in HTML. We want to define it dynamically in Javascript.  -->
+
+    <!-- Task 5 (15 minutes): Implement the following game:
+          A. When the player clicks START, after a delay of 600 milliseconds, 100 buttons are placed 
+             inside the element with id #container.
+             The buttons are labeled 1, 2, 3, ..., 99, 100 but they're randomly shuffled, so they're not in order.
+             Use the provided "shuffle" function to shuffle the array of numbers.
+             Note that shuffle() calls swap(), which is not implemented. Implement swap().
+             The buttons should be styled with the .guess class that's already defined.
+          B. Immediately when the 100 buttons are placed on the page, the label on the START button changes to 
+             a random number between 1 and 100 (inclusive). 
+             The player has to find the corresponding button within the 100 shuffled buttons and click it as fast as possible
+          D. When the player clicks it, if the correct button was clicked, the START button's text 
+             changes to display the average time-to-click of the last 3 runs, in seconds. 
+             If the wrong button was clicked, nothing happens.
+             If there haven't been 3 runs yet, show the average available.
+          E. The player clicks the START button again, and the 100 buttons are shuffled again, for another round.  -->
+
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 18px;
+        line-height: 2rem;
+        padding: 1rem;
+        color: hsl(210, 2%, 90%);
+        background: hsl(210, 4%, 8%);
+      }
+
+      button {
+        font-size: 18px;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-width: 1px;
+        background: hsl(210, 10%, 20%);
+        color: hsl(210, 0%, 95%);
+        margin: 0.25rem 0.25rem;
+        transition: color 0.5s ease-in-out; /* Transición de 0.5 segundos */
+      }
+
+      button:hover {
+        background: hsl(210, 10%, 30%); /* Color al pasar el mouse */
+      }
+
+      button:active {
+        outline: none; /* Elimina el borde de enfoque */
+        outline-style: none; /* Respaldo para navegadores antiguos */
+      }
+
+      button#start {
+        width: 8rem;
+      }
+
+      button.guess {
+        width: 4rem;
+        background: hsl(210, 60%, 40%);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--inicio div buttom -->
+    <div>
+      <!-- boton inicio -->
+      <button id="start">START</button>
+    </div>
+    <!-- fin div button -->
+    <!-- inicio container button -->
+    <div id="container">Press START to begin</div>
+    <!-- fin container button -->
+    <div></div>
+  </body>
+
+  <script>
+    // se mueve el codigo del script ya que al estar en el head no puede asignar las variables
+    //porque el arbol del DOM no se ha cargado y no selecciona correctamente los elementos
+
+    // envia el array y dos numeros los cuales indican las pocisiones a cambia en el array
+    function swap(arr, i, j) {
+      let temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+
+    // Recibe como parametro un array,y llama a swap
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        swap(arr, i, j);
+      }
+      return arr;
+    }
+
+    //funcion que recibe el largo del array como parametro y devuelve un array de ese tamanio
+    function getNumbersArray(length) {
+      const numbers = [];
+
+      if (typeof length === "number" && length > 0) {
+        //usando el algoritmo de fisher yates para generar el array  
+        for (let i = 1; i <= length; i++) {
+          numbers.push(i);
+        }
+      }
+      return numbers;
+    }
+
+    function setup() {
+      if (times.length === 0) {
+        alert("it runs");
+        //limpiamos el div container si se a realizado una nueva ejecucion
+        c.textContent = "";
+        //Paso 1 Crear un array de 100 elementos
+        let numbers = getNumbersArray(100);
+        //Paso 2 se crea una variable que recibe el resultado de la ejecucion de la funcion shuffle
+        const shuffledArray = shuffle(numbers);
+        // Paso 3 se crea una variable con un numero random de 1 a 100 (between 1 and 100)
+        let targetNumber = 0;
+        // Funcion que genera un numero random de 1 a 100 (between 1 and 100) y cambia el texto en el boton
+        function getTargetNumber() {
+          targetNumber = Math.floor(Math.random() * 100) + 1;
+          sb.textContent = targetNumber; // cambiamos el texto del boton para que sea el numero random
+        }
+
+        getTargetNumber();
+
+        //funcion que devuelve la fecha actual en milisegundos
+        function addTimestampToArray() {
+          return Date.now();
+        }
+
+        // Funcion para el manejo de evento click en los botones de respuesta, valida si el boton clicado
+        // es igual al numero target, se agrega el tiempo de ejecucion a un array y se calcula el promedio
+        // tomando la referencia actual en milisegundos y restando el tiempo de ejecucion anterior y dividiendolo
+        // entre el numero de intentos y se valida si el numero de intentos es igual a 3 para terminar el juego
+        function handleClick(event) {
+          let clickedNumber = parseInt(event.target.textContent);
+          if (clickedNumber === targetNumber) {
+            times.push(addTimestampToArray());
+            console.log(times.length);
+            if (times.length > 1) {
+              let timePromedio = 0;
+              let segundos = 0;
+
+              for (let i = 1; i < times.length; i++) {
+                let time = times[i];
+
+                segundos = segundos + (time - times[i - 1]) / 1000;
+              }
+              timePromedio = Math.floor(segundos / (times.length - 1));
+
+              const className = "timePromedio";
+              const paragraph = container.querySelector(`p.${className}`);
+
+              if (!paragraph) {
+                const paragraph = document.createElement("p");
+                paragraph.classList.add("timePromedio");
+                paragraph.textContent =
+                  "Promedio: " + timePromedio + " segundos";
+                const firstChild = c.firstChild;
+                c.insertBefore(paragraph, firstChild);
+              } else {
+                paragraph.textContent =
+                  "Promedio: " + timePromedio + " segundos";
+              }
+              getTargetNumber();
+              if (times.length === 4) {
+                times = [];
+                sb.textContent = "START";
+                c.textContent = "Press START to begin";
+                alert("Ganaste tu promedio es : " + timePromedio + " segundos");
+              }
+            }
+          }
+        }
+
+        //Paso 5 se crean los elementos button añadiendo la clase guess, el valor del array y agregandolos al contenedor
+        for (let number of shuffledArray) {
+          let button = document.createElement("button");
+          button.classList.add("guess");
+          button.textContent = number;
+          button.addEventListener("click", handleClick);
+          c.appendChild(button);
+        }
+
+        times.push(addTimestampToArray());
+      }
+    }
+
+    let times = [];
+    let c = document.getElementById("container");
+    let sb = document.getElementById("start");
+    // se agrega el setimeout para que se ejecute el setup al hacer clic en el boton start despues de 600 milisegundos
+    sb.addEventListener("click", () => {
+      setTimeout(() => {
+        setup();
+      }, 600);
+    });
+  </script>
+</html>
